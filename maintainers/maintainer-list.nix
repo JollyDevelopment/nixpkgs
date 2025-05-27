@@ -12119,6 +12119,12 @@
     githubId = 57130301;
     keys = [ { fingerprint = "1CC5 B67C EB9A 13A5 EDF6 F10E 0B4A 3662 FC58 9202"; } ];
   };
+  JollyDevelopment = {
+    name = "Alan Roberts";
+    email = "jolly.development@gmail.com";
+    github = "JollyDevelopment";
+    githubId = 6932224;
+  };
   jonas-w = {
     email = "nixpkgs@03j.de";
     github = "jonas-w";
