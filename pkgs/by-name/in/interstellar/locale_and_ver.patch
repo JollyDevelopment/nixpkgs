@@ -1,0 +1,22 @@
+diff --git a/pubspec.yaml b/pubspec.yaml
+index 470ca7e..7adbdb5 100644
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -3,7 +3,7 @@ name: interstellar
+ # Prevent accidental publishing to pub.dev.
+ publish_to: 'none'
+ 
+-version: 0.0.0
++version: 0.9.2
+ 
+ environment:
+   sdk: '>=3.3.0 <4.0.0'
+@@ -62,7 +62,7 @@ flutter:
+   uses-material-design: true
+ 
+   # Enable generation of localized Strings from arb files.
+-  generate: true
++  generate: false
+ 
+   assets:
+     # Add assets from the icons directory to the application.
