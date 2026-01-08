@@ -9,7 +9,8 @@
 python3Packages.buildPythonApplication rec {
   pname = "kapowarr";
   version = "1.2.0-unstable-2026-01-04";
-  format = "other";
+  # format = "other";
+  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Casvt";
@@ -50,7 +51,7 @@ python3Packages.buildPythonApplication rec {
 
     # Install the main script
     mkdir -p $out/bin
-    cp ${src}/Kapowarr.py $out/bin/kapowarr
+    cp Kapowarr.py $out/bin/kapowarr
     chmod +x $out/bin/kapowarr
 
     # Make sure the script can find the modules
