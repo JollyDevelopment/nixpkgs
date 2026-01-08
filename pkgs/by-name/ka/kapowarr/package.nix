@@ -8,18 +8,28 @@
 
 python3Packages.buildPythonApplication rec {
   pname = "kapowarr";
-  version = "1.2.0-unstable-2026-01-04";
-  # format = "other";
+  version = "1.2.0-unstable-2026-01-08";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Casvt";
     repo = "Kapowarr";
-    rev = "ad0c8f915d451d662a1577a3a9ad3047d6ec6094";
-    hash = "sha256-eZZ8dkza+QqulybtuZithJgRAPoyEuU9cWcUOnaA7/0=";
+    rev = "1682f537863385e6717e52430ff06870d0c1b1a5";
+    hash = "sha256-f/ODr0QgpnDHUtdEFtISfsgDa+8gTao56WouLB5WGW8=";
   };
 
-  nativeBuildInputs = [
+  # patch in the license file change to avoid a warning
+  # patch in an empty py-modules as otherwise the setuptools
+  # throws 'Multiple top-level packages discovered in a flat-layout' errors
+  patches = [
+    ./pyproject.toml.patch
+  ];
+
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  nativeBuildInputs = with python3Packages; [
     makeWrapper
   ];
 
@@ -36,10 +46,9 @@ python3Packages.buildPythonApplication rec {
     websocket-client
   ];
 
-  # Since there's no setup.py, we need to manually install the package
   installPhase = ''
     runHook preInstall
-
+     
     # Install the package structure
     mkdir -p $out/${python3.sitePackages}
     cp -r backend $out/${python3.sitePackages}/
