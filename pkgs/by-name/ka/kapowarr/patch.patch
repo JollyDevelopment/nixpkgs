@@ -1,0 +1,40 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 8065fa2..b11b03e 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -6,7 +6,7 @@ authors = [
+     {name = "Cas van Tijn"}
+ ]
+ readme = "README.md"
+-license = {file = "LICENSE"}
++license-files = ["LICENSE" ]
+ requires-python = ">= 3.8"
+ 
+ [tool.mypy]
+@@ -31,3 +31,26 @@ experimental = true
+ max_line_length = 80
+ ignore = ["E124", "E125", "E126", "E128", "E261"]
+ 
++
++[tool.setuptools]
++py-modules = [ "Kapowarr" ]
++package-dir = {"" = "."}
++packages = [
++  "frontend",
++  "frontend.static",
++  "frontend.static.css",
++  "frontend.static.img",
++  "frontend.static.js",
++  "frontend.templates", 
++  "backend",
++  "backend.base", 
++  "backend.features",
++  "backend.implementations",
++  "backend.implementations.direct_clients",
++  "backend.implementations.torrent_clients", 
++  "backend.internals",
++  "backend.lib",
++]
++
++[tool.setuptools.package-data]
++"*" = ["*.css", "*.svg", "*.ico", "*.js", "*.html"]

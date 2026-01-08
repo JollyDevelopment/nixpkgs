@@ -6,7 +6,7 @@
   makeWrapper,
 }:
 
-python3Packages.buildPythonApplication rec {
+python3Packages.buildPythonApplication {
   pname = "kapowarr";
   version = "1.2.0-unstable-2026-01-08";
   pyproject = true;
@@ -18,18 +18,17 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-f/ODr0QgpnDHUtdEFtISfsgDa+8gTao56WouLB5WGW8=";
   };
 
-  # patch in the license file change to avoid a warning
-  # patch in an empty py-modules as otherwise the setuptools
-  # throws 'Multiple top-level packages discovered in a flat-layout' errors
+  # patch the pyproject.toml so the .whl has the files/folders
+  # needed so pypaBuildPhase can put them in the $out/ paths properly
   patches = [
-    ./pyproject.toml.patch
+    ./patch.patch
   ];
 
   build-system = with python3Packages; [
     setuptools
   ];
 
-  nativeBuildInputs = with python3Packages; [
+  nativeBuildInputs = [
     makeWrapper
   ];
 
@@ -46,28 +45,19 @@ python3Packages.buildPythonApplication rec {
     websocket-client
   ];
 
-  installPhase = ''
-    runHook preInstall
-     
-    # Install the package structure
-    mkdir -p $out/${python3.sitePackages}
-    cp -r backend $out/${python3.sitePackages}/
-    cp -r frontend $out/${python3.sitePackages}/
+  postInstall = ''
+    # copy the primary script to the /bin/
+    mkdir $out/bin
+    mv $out/${python3.sitePackages}/Kapowarr.py $out/bin/kapowarr
+    chmod +x $out/bin/kapowarr
+
+    # wrap it so it can find its internal packages
+    wrapProgram $out/bin/kapowarr \
+      --set PYTHONPATH "$out/${python3.sitePackages}:$PYTHONPATH"
 
     # the program checks its own pyproject.toml when running
     # so make sure there is a copy it can find
     cp pyproject.toml $out/${python3.sitePackages}
-
-    # Install the main script
-    mkdir -p $out/bin
-    cp Kapowarr.py $out/bin/kapowarr
-    chmod +x $out/bin/kapowarr
-
-    # Make sure the script can find the modules
-    wrapProgram $out/bin/kapowarr \
-      --set PYTHONPATH "$out/${python3.sitePackages}:$PYTHONPATH"
-
-    runHook postInstall
   '';
 
   meta = with lib; {
