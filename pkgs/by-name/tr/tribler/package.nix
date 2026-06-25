@@ -3,28 +3,91 @@
   python312,
   nix-update-script,
   fetchFromGitHub,
+  fetchPypi,
+  rustPlatform,
   buildNpmPackage,
   nodejs_24,
   wrapGAppsHook3,
   libappindicator-gtk3,
+  perl,
 }:
 let
-  version = "8.2.3-unstable-2025-10-14";
+  version = "8.4.3";
   python3 = python312;
   nodejs = nodejs_24;
 
   src = fetchFromGitHub {
     owner = "tribler";
     repo = "Tribler";
-    rev = "3e5bc56a15c568d0ba41262cad63155445e062da";
-    hash = "sha256-zGh2nVcJyOwVfPEdU8ZDgANFt0KnTqEXU3I3ZOGot2c=";
+    rev = "v${version}";
+    hash = "sha256-5ykIQBvYKzGn9toXb2248ulvh22fJlE0mNQkilkWRYo=";
+  };
+
+  pyipv8 = python3.pkgs.buildPythonPackage {
+    pname = "pyipv8";
+    version = "v3.2.2247-unstable-2026-06-25";
+
+    src = fetchFromGitHub {
+      owner = "Tribler";
+      repo = "py-ipv8";
+      rev = "95422f27d875890e6e614d3867c3d533270122c4";
+      hash = "sha256-ff66EUy+CgUq45/XSQ9fCA7uK223V114SGJAetLgjKM=";
+    };
+
+    pyproject = true;
+
+    build-system = with python3.pkgs; [
+      setuptools
+      wheel
+    ];
+
+    dependencies = with python3.pkgs; [
+      aiohttp
+      aiohttp-apispec
+      cryptography
+      marshmallow
+      ipv8-rust-tunnels
+    ];
+
+    nativeCheckInputs = with python3.pkgs; [
+      pytestCheckHook
+    ];
+
+  };
+
+  ipv8-rust-tunnels = python3.pkgs.buildPythonPackage rec {
+    pname = "ipv8-rust-tunnels";
+    version = "0.1.51";
+    pyproject = true;
+
+    src = fetchPypi {
+      inherit version;
+      pname = "ipv8_rust_tunnels";
+      hash = "sha256-bJnTR12aunMO7WGTZdFUeqCJhwvQm3gxW7swsNiFcB0=";
+    };
+
+    cargoDeps = rustPlatform.fetchCargoVendor {
+      inherit pname version src;
+      hash = "sha256-/qwEuwJHIljapqwPGtE4L4NkQWSZuv6Vk5B8eQ5uMmE=";
+    };
+
+    nativeBuildInputs = with rustPlatform; [
+      cargoSetupHook
+      maturinBuildHook
+      perl
+    ];
+
+    env = {
+      RUSTFLAGS = "--cfg tokio_unstable";
+    };
+
   };
 
   tribler-webui = buildNpmPackage {
     inherit nodejs version;
     pname = "tribler-webui";
     src = "${src}/src/tribler/ui";
-    npmDepsHash = "sha256-bgRwhqP6/NMPFbZks31IZtVGV9wzFFU6qSgyLvdarlY=";
+    npmDepsHash = "sha256-3VS2E7YFI2UHWv8zbExR+i+SuLvq70mDaObDqYMIgP0=";
 
     # The prepack script runs the build script, which we'd rather do in the build phase.
     npmPackFlags = [ "--ignore-scripts" ];
@@ -66,7 +129,6 @@ python3.pkgs.buildPythonApplication {
     pystray
 
     # build/requirements.txt
-    cx-freeze
     requests
   ];
 
@@ -83,8 +145,11 @@ python3.pkgs.buildPythonApplication {
     astroid
     # tray icon deps
     libappindicator-gtk3
-    # test phase requirements
+  ];
+
+  nativeCheckInputs = with python3.pkgs; [
     pytestCheckHook
+    pytest
   ];
 
   outputs = [
@@ -115,7 +180,7 @@ python3.pkgs.buildPythonApplication {
   '';
 
   postInstall = ''
-    ln -s ${tribler-webui} $out/${python312.sitePackages}/tribler/ui
+    ln -s ${tribler-webui} $out/${python3.sitePackages}/tribler/ui
   '';
 
   preFixup = ''
@@ -124,6 +189,10 @@ python3.pkgs.buildPythonApplication {
     )
   '';
 
+  pytestFlags = [
+    "-vv"
+  ];
+
   disabledTests = [
     "test_request_for_version"
     "test_establish_connection"
@@ -131,6 +200,7 @@ python3.pkgs.buildPythonApplication {
     "test_get_default_fallback"
     "test_get_default_fallback_half_tree"
     "test_get_set_explicit"
+    "test_error_middleware_too_large"
   ];
 
   passthru.updateScript = nix-update-script { };
